@@ -93,4 +93,46 @@ contract('Remittance -When puzzle set by alice', (accounts) => {
     });
 });
 
+contract('Remittance -When puzzle set by alice and solved by carol', (accounts) => {
+    const owner = accounts[0]
+    const alice = accounts[4];
+    const carol = accounts[6];
+    const puzzle = "0x59ad4eece649151190b2031d6f9be33630b48b2e16db4650c0e151cab81f6bc2";
+    const text = "onetime1";
+    const text2 = "onetime2";
+
+    beforeEach('set up contract with puzzle and funds from alice then solve by carol', async () => {
+        instance = await Remittance.new({from: owner});
+        await instance.setupPuzzleAndFunds(puzzle, {from: alice, value: web3.utils.toWei('2', 'ether')});
+        await instance.solvePuzzleAndClaimFunds(text, text2, {from: carol});
+    });
+
+    it('Should be in the Closed state', async () => {
+        const state = await instance.state();
+        assert.equal(state.toString(10), 2);
+    });
+
+    it('Should no allow alice to reset puzzle', async () => {
+        try{
+            await instance.setupPuzzleAndFunds(puzzle, {from: alice, value: web3.utils.toWei('2', 'ether')});
+            throw null;
+        } catch(error) {
+            assert.isNotNull(error, "Expected an error but did not get one");
+            assert.include(error.message, "revert");
+            assert.include(error.message, "Contract not in Initial state");
+        }
+    });
+
+    it ('Should not allow Carol to solve puzzle', async () => {
+        try{
+            await instance.solvePuzzleAndClaimFunds(text, text, {from: carol});
+            throw null;
+        } catch(error) {
+            assert.isNotNull(error, "Expected an error but did not get one");
+            assert.include(error.message, "revert");
+            assert.include(error.message, "Contract not in Ready state");
+        }
+    });
+});
+
 
