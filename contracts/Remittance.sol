@@ -14,7 +14,7 @@ contract Remittance {
     event LogClaimFunds(address sender, uint256 amount);
     
     function setupPuzzleAndFunds(bytes32 _puzzle) public payable returns(bool success){
-        require(state == State.Initial, "Contract is already initialized");
+        require(state == State.Initial, "Contract not in Initial state");
         state = State.Ready;
         puzzle = _puzzle;
         funds = funds.add(msg.value);
@@ -23,7 +23,7 @@ contract Remittance {
     }
     
     function solvePuzzleAndClaimFunds(string memory solution1, string memory solution2) public payable returns(bool success){
-        require(state == State.Ready, "Contract not initialized");
+        require(state == State.Ready, "Contract not in Ready state");
         require(puzzle == keccak256(abi.encode(solution1, solution2)), "Puzzle not solved");
         state = State.Closed;
         uint256 amount = funds;
