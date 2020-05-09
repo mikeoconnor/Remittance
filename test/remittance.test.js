@@ -1,6 +1,6 @@
 const Remittance = artifacts.require("Remittance");
 
-contract('Remittance - Wen new contract', (accounts) => {
+contract('Remittance - Given new contract', (accounts) => {
     const owner = accounts[0]
     const alice = accounts[4];
     const carol = accounts[6];
@@ -14,12 +14,6 @@ contract('Remittance - Wen new contract', (accounts) => {
     beforeEach('set up default contract', async () => {
         instance = await Remittance.new({from: owner});
     });
-
-    it('should be in Initial state', async () => {
-        const state = await instance.state();
-        assert.equal(state.toString(10), 0);
-    });
-
 
     it('should allow alice to set puzzle with funds', async () => {
         puzzle = await instance.generatePuzzle(secret1, secret2);
@@ -40,12 +34,12 @@ contract('Remittance - Wen new contract', (accounts) => {
         } catch(error) {
             assert.isNotNull(error, "Expected an error but did not get one");
             assert.include(error.message, "revert");
-            assert.include(error.message, "Contract not in Ready state");
+            assert.include(error.message, "no puzzle");
         }
     });
 });
 
-contract('Remittance -When puzzle set by alice', (accounts) => {
+contract('Remittance -Given puzzle set by alice', (accounts) => {
     const owner = accounts[0]
     const alice = accounts[4];
     const carol = accounts[6];
@@ -60,23 +54,18 @@ contract('Remittance -When puzzle set by alice', (accounts) => {
         await instance.setupPuzzleAndFunds(puzzle, {from: alice, value: web3.utils.toWei('2', 'ether')});
     });
 
-    it('Should be in the Ready state', async () => {
-        const state = await instance.state();
-        assert.equal(state.toString(10), 1);
-    });
-
-    it('Should no allow alice to reset puzzle', async () => {
+    it('Should not allow alice to reset puzzle', async () => {
         try{
             await instance.setupPuzzleAndFunds(puzzle, {from: alice, value: web3.utils.toWei('2', 'ether')});
             throw null;
         } catch(error) {
             assert.isNotNull(error, "Expected an error but did not get one");
             assert.include(error.message, "revert");
-            assert.include(error.message, "Contract not in Initial state");
+            assert.include(error.message, "puzzle should be zero");
         }
     });
 
-    it('Should no allow carol to solve puzzle with incorrect data', async () => {
+    it('Should not allow carol to solve puzzle with incorrect data', async () => {
         try{
             const text = "onetime1";
             await instance.solvePuzzleAndClaimFunds(text, text, {from: carol});
@@ -100,7 +89,7 @@ contract('Remittance -When puzzle set by alice', (accounts) => {
     });
 });
 
-contract('Remittance -When puzzle set by alice and solved by carol', (accounts) => {
+contract('Remittance -Given puzzle set by alice and solved by carol', (accounts) => {
     const owner = accounts[0]
     const alice = accounts[4];
     const carol = accounts[6];
@@ -116,19 +105,14 @@ contract('Remittance -When puzzle set by alice and solved by carol', (accounts) 
         await instance.solvePuzzleAndClaimFunds(text, text2, {from: carol});
     });
 
-    it('Should be in the Closed state', async () => {
-        const state = await instance.state();
-        assert.equal(state.toString(10), 2);
-    });
-
-    it('Should no allow alice to reset puzzle', async () => {
+    it('Should not allow alice to reset puzzle', async () => {
         try{
             await instance.setupPuzzleAndFunds(puzzle, {from: alice, value: web3.utils.toWei('2', 'ether')});
             throw null;
         } catch(error) {
             assert.isNotNull(error, "Expected an error but did not get one");
             assert.include(error.message, "revert");
-            assert.include(error.message, "Contract not in Initial state");
+            assert.include(error.message, "puzzle should be zero");
         }
     });
 
@@ -139,7 +123,7 @@ contract('Remittance -When puzzle set by alice and solved by carol', (accounts) 
         } catch(error) {
             assert.isNotNull(error, "Expected an error but did not get one");
             assert.include(error.message, "revert");
-            assert.include(error.message, "Contract not in Ready state");
+            assert.include(error.message, "no funds");
         }
     });
 });
