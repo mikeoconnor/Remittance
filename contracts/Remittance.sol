@@ -6,17 +6,17 @@ import "./Stoppable.sol";
 contract Remittance is Stoppable {
     using SafeMath for uint;
 
-    enum State { Initial, Ready, Closed }
     bytes32 private puzzle;
-    State public state;
     uint256 funds;
     
     event LogSetup(address sender, uint256 amount, bytes32 puzzle);
     event LogClaimFunds(address sender, uint256 amount);
     
     function setupPuzzleAndFunds(bytes32 _puzzle) public payable ifRunning returns(bool success){
-        require(state == State.Initial, "Contract not in Initial state");
-        state = State.Ready;
+        require(puzzle == 0, "puzzle should be zero");
+        require(funds == 0, "funds should be zero");
+        require(msg.value != 0, "No funds provided");
+        require(_puzzle != 0, "No puzzle provided");
         puzzle = _puzzle;
         funds = funds.add(msg.value);
         emit LogSetup(msg.sender, msg.value, _puzzle);
@@ -24,9 +24,9 @@ contract Remittance is Stoppable {
     }
     
     function solvePuzzleAndClaimFunds(string memory solution1, string memory solution2) public payable ifRunning returns(bool success){
-        require(state == State.Ready, "Contract not in Ready state");
+        require(puzzle != 0, "no puzzle");
+        require(funds != 0, "no funds");
         require(puzzle == keccak256(abi.encode(solution1, solution2)), "Puzzle not solved");
-        state = State.Closed;
         uint256 amount = funds;
         funds = 0;
         emit LogClaimFunds(msg.sender, amount);
