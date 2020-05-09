@@ -34,4 +34,8 @@ contract Remittance is Stoppable {
         require(result, "Failed to transfer funds");
         return result;
     }
+
+    function generatePuzzle(string memory solution1, string memory solution2) public pure returns (bytes32 newPuzzle) {
+        return keccak256(abi.encode(solution1, solution2));
+    }
 }
