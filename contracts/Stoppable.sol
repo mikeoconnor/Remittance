@@ -43,9 +43,8 @@ contract Stoppable is Ownable {
         return true;
     }
 
-    function kill() public onlyOwner ifAlive returns(bool success){
+    function kill() public onlyOwner ifAlive ifStopped returns(bool success){
         killed = true;
-        running = false;
         emit LogKilled(msg.sender);
         return true;
     }
