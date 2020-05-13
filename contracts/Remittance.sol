@@ -12,7 +12,7 @@ contract Remittance is Stoppable {
     event LogSetup(address indexed sender, uint256 amount, bytes32 puzzle);
     event LogClaimFunds(address indexed sender, uint256 amount);
     
-    function setupPuzzleAndFunds(bytes32 _puzzle) public payable ifRunning returns(bool success){
+    function setupPuzzleAndFunds(bytes32 _puzzle) public payable ifAlive ifRunning returns(bool success){
         require(puzzle == 0, "puzzle should be zero");
         require(funds == 0, "funds should be zero");
         require(msg.value != 0, "No funds provided");
@@ -23,7 +23,7 @@ contract Remittance is Stoppable {
         return true;
     }
     
-    function solvePuzzleAndClaimFunds(string memory solution1, string memory solution2) public payable ifRunning returns(bool success){
+    function solvePuzzleAndClaimFunds(string memory solution1, string memory solution2) public payable ifAlive ifRunning returns(bool success){
         require(puzzle != 0, "no puzzle");
         require(funds != 0, "no funds");
         require(puzzle == keccak256(abi.encode(solution1, solution2)), "Puzzle not solved");
