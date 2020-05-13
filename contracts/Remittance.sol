@@ -9,8 +9,8 @@ contract Remittance is Stoppable {
     bytes32 private puzzle;
     uint256 funds;
     
-    event LogSetup(address sender, uint256 amount, bytes32 puzzle);
-    event LogClaimFunds(address sender, uint256 amount);
+    event LogSetup(address indexed sender, uint256 amount, bytes32 puzzle);
+    event LogClaimFunds(address indexed sender, uint256 amount);
     
     function setupPuzzleAndFunds(bytes32 _puzzle) public payable ifRunning returns(bool success){
         require(puzzle == 0, "puzzle should be zero");
