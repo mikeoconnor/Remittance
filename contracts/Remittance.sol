@@ -25,7 +25,7 @@ contract Remittance is Stoppable {
     function solvePuzzleAndClaimFunds(string memory solution1, string memory solution2) public payable ifAlive ifRunning returns(bool success){
         require(puzzle != 0, "no puzzle");
         require(funds != 0, "no funds");
-        require(puzzle == generatePuzzle(address(this), solution1, solution2), "Puzzle not solved");
+        require(puzzle == generatePuzzle(solution1, solution2), "Puzzle not solved");
         uint256 amount = funds;
         funds = 0;
         emit LogClaimFunds(msg.sender, amount);
@@ -34,7 +34,7 @@ contract Remittance is Stoppable {
         return result;
     }
 
-    function generatePuzzle(address contractAddress, string memory solution1, string memory solution2) public pure returns (bytes32 newPuzzle) {
-        return keccak256(abi.encode(contractAddress, solution1, solution2));
+    function generatePuzzle(string memory solution1, string memory solution2) public view returns (bytes32 newPuzzle) {
+        return keccak256(abi.encode(address(this), solution1, solution2));
     }
 }
