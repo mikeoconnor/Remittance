@@ -1,22 +1,27 @@
 const Remittance = artifacts.require("Remittance");
 
+let instance = null;
+let tx = null;
+let puzzle = null;
+let contractAddress = null;
+const secret1 = "onetime1";
+const secret2 = "onetime2";
+const text = "onetime1";
+const text2 = "onetime2";
+
 contract('Remittance - Given new contract', (accounts) => {
     const owner = accounts[0]
     const alice = accounts[4];
     const carol = accounts[6];
-    const secret1 = "onetime1";
-    const secret2 = "onetime2";
-
-    let instance = null;
-    let tx = null;
-    let puzzle = null;
 
     beforeEach('set up default contract', async () => {
         instance = await Remittance.new({from: owner});
     });
 
     it('should allow alice to set puzzle with funds', async () => {
-        puzzle = await instance.generatePuzzle(secret1, secret2);
+        contractAddress = await instance.address;
+        console.log("contract address:- ", contractAddress);
+        puzzle = await instance.generatePuzzle(contractAddress, secret1, secret2);
         tx = await instance.setupPuzzleAndFunds(puzzle, {from: alice, value: web3.utils.toWei('2', 'ether')});
         const { logs } = tx;
         const log = logs[0];
@@ -43,14 +48,11 @@ contract('Remittance -Given puzzle set by alice', (accounts) => {
     const owner = accounts[0]
     const alice = accounts[4];
     const carol = accounts[6];
-    const secret1 = "onetime1";
-    const secret2 = "onetime2";
-    const text = "onetime1";
-    const text2 = "onetime2";
 
     beforeEach('set up contract with puzzle and funds from alice', async () => {
         instance = await Remittance.new({from: owner});
-        puzzle = await instance.generatePuzzle(secret1, secret2);
+        contractAddress = await instance.address;
+        puzzle = await instance.generatePuzzle(contractAddress, secret1, secret2);
         await instance.setupPuzzleAndFunds(puzzle, {from: alice, value: web3.utils.toWei('2', 'ether')});
     });
 
@@ -93,14 +95,11 @@ contract('Remittance -Given puzzle set by alice and solved by carol', (accounts)
     const owner = accounts[0]
     const alice = accounts[4];
     const carol = accounts[6];
-    const secret1 = "onetime1";
-    const secret2 = "onetime2";
-    const text = "onetime1";
-    const text2 = "onetime2";
 
     beforeEach('set up contract with puzzle and funds from alice then solve by carol', async () => {
         instance = await Remittance.new({from: owner});
-        puzzle = await instance.generatePuzzle(secret1, secret2);
+        contractAddress = await instance.address;
+        puzzle = await instance.generatePuzzle(contractAddress, secret1, secret2);
         await instance.setupPuzzleAndFunds(puzzle, {from: alice, value: web3.utils.toWei('2', 'ether')});
         await instance.solvePuzzleAndClaimFunds(text, text2, {from: carol});
     });
@@ -127,5 +126,4 @@ contract('Remittance -Given puzzle set by alice and solved by carol', (accounts)
         }
     });
 });
-
 
