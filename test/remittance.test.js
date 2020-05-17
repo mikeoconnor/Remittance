@@ -128,7 +128,7 @@ contract('Remittance - Given expiration date has expired', (accounts) => {
     const alice = accounts[4];
     const carol = accounts[6];
 
-    beforeEach('set up contract with puzzle and funds from alice', async() => {
+    before('set up contract with puzzle and funds from alice', async() => {
         instance = await Remittance.new({from: owner});
         puzzle = await instance.generatePuzzle(secret1, secret2);
         await instance.setupPuzzleAndFunds(puzzle, Tue_15_Sep_00_00_00_BST_2020,
@@ -137,21 +137,42 @@ contract('Remittance - Given expiration date has expired', (accounts) => {
         snapshotId = snapshot.result;
     });
 
-    afterEach(async() => {
+    after(async() => {
         await tm.revertToSnapshot(snapshotId);
     });
 
-    it ('Should allow alice to reclaim funds after expiration date (if not solved by carol)', async () => {
+    it ('Should allow alice to reclaim funds after expiration date (if not solved by carol)', async() => {
         await tm.advanceBlockAndSetTime(Fri_25_Sep_00_00_00_BST_2020);
         tx = await instance.payerReclaimFundsAfterExpirationDate(secret1, secret2, {from: alice});
         truffleAssert.eventEmitted(tx, 'LogPayerReclaimsFunds', (ev) => {
             return ev.sender === alice && ev.amount.toString(10) === expectedAmount;
         });
-        // It should then not allow carol to solve the puzzle.
+    });
+
+    it ('Should then not allow carol to solve the puzzle', async() => {
         await truffleAssert.reverts(
             instance.solvePuzzleAndClaimFunds(text, text2, {from: carol}),
             "no funds"
         );
+    });
+});
+
+contract('Remittance - Given expiration date has expired', (accounts) => {
+    const owner = accounts[0]
+    const alice = accounts[4];
+    const carol = accounts[6];
+
+    before('set up contract with puzzle and funds from alice', async() => {
+        instance = await Remittance.new({from: owner});
+        puzzle = await instance.generatePuzzle(secret1, secret2);
+        await instance.setupPuzzleAndFunds(puzzle, Tue_15_Sep_00_00_00_BST_2020,
+            {from: alice, value: web3.utils.toWei('2', 'ether')});
+        let snapshot = await tm.takeSnapshot();
+        snapshotId = snapshot.result;
+    });
+
+    after(async() => {
+        await tm.revertToSnapshot(snapshotId);
     });
 
     it ('Should allow Carol to solve puzzle after expiration date (if not reclaimed by alice)', async () => {
@@ -160,7 +181,9 @@ contract('Remittance - Given expiration date has expired', (accounts) => {
         truffleAssert.eventEmitted(tx, 'LogClaimFunds', (ev) => {
             return ev.sender === carol && ev.amount.toString(10) === expectedAmount;
         });
-        // It should then not allow alice to reclaim the funds.
+    });
+
+    it ('Should then not allow to reclaim the funds', async() => {
         await truffleAssert.reverts(
             instance.payerReclaimFundsAfterExpirationDate(secret1, secret2, {from: alice}),
             "no funds"
