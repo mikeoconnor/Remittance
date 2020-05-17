@@ -40,7 +40,7 @@ contract('Remittance - Given new contract', (accounts) => {
     it ('Should not allow Carol to solve puzzle', async () => {
         await truffleAssert.reverts(
             instance.solvePuzzleAndClaimFunds(text, text, {from: carol}),
-            "no puzzle"
+            "Puzzle not solved"
         );
     });
 });
@@ -110,7 +110,7 @@ contract('Remittance -Given puzzle set by alice and solved by carol', (accounts)
 
     it ('Should not allow Carol to solve puzzle', async () => {
         await truffleAssert.reverts(
-            instance.solvePuzzleAndClaimFunds(text, text, {from: carol}),
+            instance.solvePuzzleAndClaimFunds(text, text2, {from: carol}),
             "no funds"
         );
     });
@@ -149,7 +149,7 @@ contract('Remittance - Given expiration date has expired', (accounts) => {
         });
         // It should then not allow carol to solve the puzzle.
         await truffleAssert.reverts(
-            instance.solvePuzzleAndClaimFunds(text, text, {from: carol}),
+            instance.solvePuzzleAndClaimFunds(text, text2, {from: carol}),
             "no funds"
         );
     });
