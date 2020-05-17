@@ -44,7 +44,8 @@ contract Remittance is Stoppable {
         return keccak256(abi.encode(address(this), solution1, solution2));
     }
 
-    function payerReclaimFundsAfterExpirationDate() public payable returns (bool success){
+    function payerReclaimFundsAfterExpirationDate(string memory solution1, string memory solution2) public payable returns (bool success){
+        require(puzzle == generatePuzzle(solution1, solution2), "Puzzle not solved");
         require(payer == msg.sender, "not payer");
         require(now >= expirationDate, "not expired");
         require(funds != 0, "no funds");
