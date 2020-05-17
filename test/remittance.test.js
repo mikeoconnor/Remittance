@@ -79,9 +79,9 @@ contract('Remittance -Given puzzle set by alice', (accounts) => {
         });
     });
 
-    it('Should allow alice reclaim the funds before expiration', async () => {
+    it('Should not allow alice to reclaim the funds before expiration', async () => {
         await truffleAssert.reverts(
-            instance.payerReclaimFundsAfterExpirationDate({from: alice}),
+            instance.payerReclaimFundsAfterExpirationDate(secret1, secret2, {from: alice}),
             "not expired"
         );
     });
@@ -115,9 +115,9 @@ contract('Remittance -Given puzzle set by alice and solved by carol', (accounts)
         );
     });
 
-    it('Should allow alice reclaim the funds', async () => {
+    it('Should not allow alice to reclaim the funds before expiration', async () => {
         await truffleAssert.reverts(
-            instance.payerReclaimFundsAfterExpirationDate({from: alice}),
+            instance.payerReclaimFundsAfterExpirationDate(secret1, secret2, {from: alice}),
             "not expired"
         );
     });
@@ -143,7 +143,7 @@ contract('Remittance - Given expiration date has expired', (accounts) => {
 
     it ('Should allow alice to reclaim funds after expiration date (if not solved by carol)', async () => {
         await tm.advanceBlockAndSetTime(Fri_25_Sep_00_00_00_BST_2020);
-        tx = await instance.payerReclaimFundsAfterExpirationDate({from: alice});
+        tx = await instance.payerReclaimFundsAfterExpirationDate(secret1, secret2, {from: alice});
         truffleAssert.eventEmitted(tx, 'LogPayerReclaimsFunds', (ev) => {
             return ev.sender === alice && ev.amount.toString(10) === expectedAmount;
         });
@@ -162,7 +162,7 @@ contract('Remittance - Given expiration date has expired', (accounts) => {
         });
         // It should then not allow alice to reclaim the funds.
         await truffleAssert.reverts(
-            instance.payerReclaimFundsAfterExpirationDate({from: alice}),
+            instance.payerReclaimFundsAfterExpirationDate(secret1, secret2, {from: alice}),
             "no funds"
         );
     });
