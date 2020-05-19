@@ -35,8 +35,8 @@ contract('Remittance - Given new contract', (accounts) => {
         tx = await instance.setupPuzzleAndFunds(puzzle, carol, Tue_15_Sep_00_00_00_BST_2020,
                 {from: alice, value: web3.utils.toWei('2', 'ether')});
         truffleAssert.eventEmitted(tx, 'LogSetup', (ev) => {
-             return  ev.sender === alice && ev.amount.toString(10) === expectedAmount &&
-                     ev.puzzle !== 0 &&
+             return  ev.sender === alice && ev.shop === carol &&
+                     ev.amount.toString(10) === expectedAmount && ev.puzzle !== 0 &&
                      ev.expirationDate.toString(10) === Tue_15_Sep_00_00_00_BST_2020.toString(10);
         });
     });
@@ -222,8 +222,8 @@ contract('Remittance - Given new contract', (accounts) => {
         tx = await instance.setupPuzzleAndFunds(puzzle, carol, Tue_15_Sep_00_00_00_BST_2020,
                 {from: alice, value: web3.utils.toWei('2', 'ether')});
         truffleAssert.eventEmitted(tx, 'LogSetup', (ev) => {
-             return  ev.sender === alice && ev.amount.toString(10) === expectedAmount &&
-                     ev.puzzle !== 0 &&
+             return  ev.sender === alice && ev.shop === carol &&
+                     ev.amount.toString(10) === expectedAmount && ev.puzzle !== 0 &&
                      ev.expirationDate.toString(10) === Tue_15_Sep_00_00_00_BST_2020.toString(10);
         });
     });
@@ -233,8 +233,8 @@ contract('Remittance - Given new contract', (accounts) => {
         tx = await instance.setupPuzzleAndFunds(puzzle, bob, Tue_15_Sep_00_00_00_BST_2020,
                 {from: alice, value: web3.utils.toWei('2', 'ether')});
         truffleAssert.eventEmitted(tx, 'LogSetup', (ev) => {
-             return  ev.sender === alice && ev.amount.toString(10) === expectedAmount &&
-                     ev.puzzle !== 0 &&
+             return  ev.sender === alice && ev.shop === bob &&
+                     ev.amount.toString(10) === expectedAmount && ev.puzzle !== 0 &&
                      ev.expirationDate.toString(10) === Tue_15_Sep_00_00_00_BST_2020.toString(10);
         });
     });
