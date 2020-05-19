@@ -25,7 +25,7 @@ contract Remittance is Stoppable {
         require(payments[_puzzle].payer == address(0), "puzzle should be zero");
         payments[_puzzle].payer = msg.sender;
         payments[_puzzle].expirationDate = _expirationDate;
-        payments[_puzzle].funds = payments[_puzzle].funds.add(msg.value);
+        payments[_puzzle].funds = msg.value;
         emit LogSetup(msg.sender, msg.value, _puzzle, _expirationDate);
         return true;
     }
