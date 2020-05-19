@@ -12,6 +12,8 @@ const secret4 = "boy";
 const text = "onetime1";
 const text2 = "onetime2";
 const expectedAmount = "2000000000000000000";
+const toBN = web3.utils.toBN;
+const getBalance = web3.eth.getBalance;
 
 // The expiration date
 const Tue_15_Sep_00_00_00_BST_2020 = 1600124400;
@@ -86,6 +88,18 @@ contract('Remittance -Given puzzle set by alice', (accounts) => {
             instance.payerReclaimFundsAfterExpirationDate(secret1, secret2, {from: alice}),
             "not expired"
         );
+    });
+
+    it('Should allow carol to solve puzzle and collect funds (verifying claimed funds)', async () => {
+        let balanceBefore = toBN(await getBalance(carol));
+        tx = await instance.solvePuzzleAndClaimFunds(text, text2, {from: carol});
+        let trans = await web3.eth.getTransaction(tx.tx);
+        let balanceAfter = toBN(await getBalance(carol));
+        let gasPrice = toBN(trans.gasPrice);
+        let gasUsed = toBN(tx.receipt.gasUsed);
+        let amountClaimed = toBN(tx.logs[0].args.amount);
+        let gasCost = gasPrice.mul(gasUsed);
+        assert.isTrue(balanceAfter.eq(balanceBefore.add(amountClaimed).sub(gasCost)));
     });
 });
 
