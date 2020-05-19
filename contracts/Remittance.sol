@@ -10,7 +10,6 @@ contract Remittance is Stoppable {
         address payer;
         uint256 funds;
         uint256 expirationDate;
-        bool isValid;
     }
 
     mapping(bytes32 => PaymentStruct) payments;
@@ -23,18 +22,17 @@ contract Remittance is Stoppable {
         require(_puzzle != 0, "No puzzle provided");
         require(_expirationDate >= now, "expiration date not in future");
         require(msg.value != 0, "No funds provided");
-        require(!payments[_puzzle].isValid, "puzzle should be zero");
+        require(payments[_puzzle].payer == address(0), "puzzle should be zero");
         payments[_puzzle].payer = msg.sender;
         payments[_puzzle].expirationDate = _expirationDate;
         payments[_puzzle].funds = payments[_puzzle].funds.add(msg.value);
-        payments[_puzzle].isValid = true;
         emit LogSetup(msg.sender, msg.value, _puzzle, _expirationDate);
         return true;
     }
     
     function solvePuzzleAndClaimFunds(string memory solution1, string memory solution2) public payable ifAlive ifRunning returns(bool success){
         bytes32 puzzle = generatePuzzle(solution1, solution2);
-        require(payments[puzzle].isValid, "Puzzle not solved");
+        require(payments[puzzle].payer != address(0), "Puzzle not solved");
         require(payments[puzzle].funds != 0, "no funds");
         uint256 amount = payments[puzzle].funds;
         payments[puzzle].funds = 0;
@@ -50,7 +48,7 @@ contract Remittance is Stoppable {
 
     function payerReclaimFundsAfterExpirationDate(string memory solution1, string memory solution2) public payable returns (bool success){
         bytes32 puzzle = generatePuzzle(solution1, solution2);
-        require(payments[puzzle].isValid, "Puzzle not solved");
+        require(payments[puzzle].payer != address(0), "Puzzle not solved");
         require(payments[puzzle].payer == msg.sender, "not payer");
         require(now >= payments[puzzle].expirationDate, "not expired");
         require(payments[puzzle].funds != 0, "no funds");
