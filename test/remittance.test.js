@@ -31,8 +31,8 @@ contract('Remittance - Given new contract', (accounts) => {
     });
 
     it('should allow alice to set puzzle with funds', async () => {
-        puzzle = await instance.generatePuzzle(secret1, secret2);
-        tx = await instance.setupPuzzleAndFunds(puzzle, Tue_15_Sep_00_00_00_BST_2020,
+        puzzle = await instance.generatePuzzle(carol, secret2);
+        tx = await instance.setupPuzzleAndFunds(puzzle, carol, Tue_15_Sep_00_00_00_BST_2020,
                 {from: alice, value: web3.utils.toWei('2', 'ether')});
         truffleAssert.eventEmitted(tx, 'LogSetup', (ev) => {
              return  ev.sender === alice && ev.amount.toString(10) === expectedAmount &&
@@ -43,7 +43,7 @@ contract('Remittance - Given new contract', (accounts) => {
 
     it ('Should not allow Carol to solve puzzle', async () => {
         await truffleAssert.reverts(
-            instance.solvePuzzleAndClaimFunds(text, text, {from: carol}),
+            instance.solvePuzzleAndClaimFunds(text, {from: carol}),
             "Puzzle not solved"
         );
     });
@@ -56,14 +56,14 @@ contract('Remittance -Given puzzle set by alice', (accounts) => {
 
     beforeEach('set up contract with puzzle and funds from alice', async () => {
         instance = await Remittance.new({from: owner});
-        puzzle = await instance.generatePuzzle(secret1, secret2);
-        await instance.setupPuzzleAndFunds(puzzle, Tue_15_Sep_00_00_00_BST_2020,
+        puzzle = await instance.generatePuzzle(carol, secret2);
+        await instance.setupPuzzleAndFunds(puzzle, carol, Tue_15_Sep_00_00_00_BST_2020,
             {from: alice, value: web3.utils.toWei('2', 'ether')});
     });
 
     it('Should not allow alice to reset puzzle', async () => {
         await truffleAssert.reverts(
-            instance.setupPuzzleAndFunds(puzzle, Tue_15_Sep_00_00_00_BST_2020,
+            instance.setupPuzzleAndFunds(puzzle, carol, Tue_15_Sep_00_00_00_BST_2020,
                 {from: alice, value: web3.utils.toWei('2', 'ether')}),
             "puzzle should be zero"
         );
@@ -71,13 +71,13 @@ contract('Remittance -Given puzzle set by alice', (accounts) => {
 
     it('Should not allow carol to solve puzzle with incorrect data', async () => {
         await truffleAssert.reverts(
-            instance.solvePuzzleAndClaimFunds(text, text, {from: carol}),
+            instance.solvePuzzleAndClaimFunds(text, {from: carol}),
             "Puzzle not solved"
         );
     });
 
     it('Should allow carol to solve puzzle and collect funds', async () => {
-        tx = await instance.solvePuzzleAndClaimFunds(text, text2, {from: carol});
+        tx = await instance.solvePuzzleAndClaimFunds(text2, {from: carol});
         truffleAssert.eventEmitted(tx, 'LogClaimFunds', (ev) => {
             return ev.sender === carol && ev.amount.toString(10) === expectedAmount;
         });
@@ -85,14 +85,14 @@ contract('Remittance -Given puzzle set by alice', (accounts) => {
 
     it('Should not allow alice to reclaim the funds before expiration', async () => {
         await truffleAssert.reverts(
-            instance.payerReclaimFundsAfterExpirationDate(secret1, secret2, {from: alice}),
+            instance.payerReclaimFundsAfterExpirationDate(carol, secret2, {from: alice}),
             "not expired"
         );
     });
 
     it('Should allow carol to solve puzzle and collect funds (verifying claimed funds)', async () => {
         let balanceBefore = toBN(await getBalance(carol));
-        tx = await instance.solvePuzzleAndClaimFunds(text, text2, {from: carol});
+        tx = await instance.solvePuzzleAndClaimFunds(text2, {from: carol});
         let trans = await web3.eth.getTransaction(tx.tx);
         let balanceAfter = toBN(await getBalance(carol));
         let gasPrice = toBN(trans.gasPrice);
@@ -110,15 +110,15 @@ contract('Remittance -Given puzzle set by alice and solved by carol', (accounts)
 
     beforeEach('set up contract with puzzle and funds from alice then solve by carol', async () => {
         instance = await Remittance.new({from: owner});
-        puzzle = await instance.generatePuzzle(secret1, secret2);
-        await instance.setupPuzzleAndFunds(puzzle, Tue_15_Sep_00_00_00_BST_2020,
+        puzzle = await instance.generatePuzzle(carol, secret2);
+        await instance.setupPuzzleAndFunds(puzzle, carol, Tue_15_Sep_00_00_00_BST_2020,
             {from: alice, value: web3.utils.toWei('2', 'ether')});
-        await instance.solvePuzzleAndClaimFunds(text, text2, {from: carol});
+        await instance.solvePuzzleAndClaimFunds(text2, {from: carol});
     });
 
     it('Should not allow alice to reset puzzle', async () => {
         await truffleAssert.reverts(
-            instance.setupPuzzleAndFunds(puzzle, Tue_15_Sep_00_00_00_BST_2020,
+            instance.setupPuzzleAndFunds(puzzle, carol, Tue_15_Sep_00_00_00_BST_2020,
                 {from: alice, value: web3.utils.toWei('2', 'ether')}),
             "puzzle should be zero"
         );
@@ -126,14 +126,14 @@ contract('Remittance -Given puzzle set by alice and solved by carol', (accounts)
 
     it ('Should not allow Carol to solve puzzle', async () => {
         await truffleAssert.reverts(
-            instance.solvePuzzleAndClaimFunds(text, text2, {from: carol}),
+            instance.solvePuzzleAndClaimFunds(text2, {from: carol}),
             "no funds"
         );
     });
 
     it('Should not allow alice to reclaim the funds before expiration', async () => {
         await truffleAssert.reverts(
-            instance.payerReclaimFundsAfterExpirationDate(secret1, secret2, {from: alice}),
+            instance.payerReclaimFundsAfterExpirationDate(carol, secret2, {from: alice}),
             "not expired"
         );
     });
@@ -146,8 +146,8 @@ contract('Remittance - Given expiration date has expired', (accounts) => {
 
     before('set up contract with puzzle and funds from alice', async() => {
         instance = await Remittance.new({from: owner});
-        puzzle = await instance.generatePuzzle(secret1, secret2);
-        await instance.setupPuzzleAndFunds(puzzle, Tue_15_Sep_00_00_00_BST_2020,
+        puzzle = await instance.generatePuzzle(carol, secret2);
+        await instance.setupPuzzleAndFunds(puzzle, carol, Tue_15_Sep_00_00_00_BST_2020,
             {from: alice, value: web3.utils.toWei('2', 'ether')});
         let snapshot = await tm.takeSnapshot();
         snapshotId = snapshot.result;
@@ -159,7 +159,7 @@ contract('Remittance - Given expiration date has expired', (accounts) => {
 
     it ('Should allow alice to reclaim funds after expiration date (if not solved by carol)', async() => {
         await tm.advanceBlockAndSetTime(Fri_25_Sep_00_00_00_BST_2020);
-        tx = await instance.payerReclaimFundsAfterExpirationDate(secret1, secret2, {from: alice});
+        tx = await instance.payerReclaimFundsAfterExpirationDate(carol, secret2, {from: alice});
         truffleAssert.eventEmitted(tx, 'LogPayerReclaimsFunds', (ev) => {
             return ev.sender === alice && ev.amount.toString(10) === expectedAmount;
         });
@@ -167,7 +167,7 @@ contract('Remittance - Given expiration date has expired', (accounts) => {
 
     it ('Should then not allow carol to solve the puzzle', async() => {
         await truffleAssert.reverts(
-            instance.solvePuzzleAndClaimFunds(text, text2, {from: carol}),
+            instance.solvePuzzleAndClaimFunds(text2, {from: carol}),
             "no funds"
         );
     });
@@ -180,8 +180,8 @@ contract('Remittance - Given expiration date has expired', (accounts) => {
 
     before('set up contract with puzzle and funds from alice', async() => {
         instance = await Remittance.new({from: owner});
-        puzzle = await instance.generatePuzzle(secret1, secret2);
-        await instance.setupPuzzleAndFunds(puzzle, Tue_15_Sep_00_00_00_BST_2020,
+        puzzle = await instance.generatePuzzle(carol, secret2);
+        await instance.setupPuzzleAndFunds(puzzle, carol, Tue_15_Sep_00_00_00_BST_2020,
             {from: alice, value: web3.utils.toWei('2', 'ether')});
         let snapshot = await tm.takeSnapshot();
         snapshotId = snapshot.result;
@@ -193,7 +193,7 @@ contract('Remittance - Given expiration date has expired', (accounts) => {
 
     it ('Should allow Carol to solve puzzle after expiration date (if not reclaimed by alice)', async () => {
         await tm.advanceBlockAndSetTime(Fri_25_Sep_00_00_00_BST_2020);
-        tx = await instance.solvePuzzleAndClaimFunds(text, text2, {from: carol});
+        tx = await instance.solvePuzzleAndClaimFunds(text2, {from: carol});
         truffleAssert.eventEmitted(tx, 'LogClaimFunds', (ev) => {
             return ev.sender === carol && ev.amount.toString(10) === expectedAmount;
         });
@@ -201,7 +201,7 @@ contract('Remittance - Given expiration date has expired', (accounts) => {
 
     it ('Should then not allow to reclaim the funds', async() => {
         await truffleAssert.reverts(
-            instance.payerReclaimFundsAfterExpirationDate(secret1, secret2, {from: alice}),
+            instance.payerReclaimFundsAfterExpirationDate(carol, secret2, {from: alice}),
             "no funds"
         );
     });
@@ -210,6 +210,7 @@ contract('Remittance - Given expiration date has expired', (accounts) => {
 contract('Remittance - Given new contract', (accounts) => {
     const owner = accounts[0]
     const alice = accounts[4];
+    const bob = accounts[5];
     const carol = accounts[6];
 
     before('set up default contract', async () => {
@@ -217,8 +218,8 @@ contract('Remittance - Given new contract', (accounts) => {
     });
 
     it('should allow alice to set puzzle with funds', async () => {
-        puzzle = await instance.generatePuzzle(secret1, secret2);
-        tx = await instance.setupPuzzleAndFunds(puzzle, Tue_15_Sep_00_00_00_BST_2020,
+        puzzle = await instance.generatePuzzle(carol, secret2);
+        tx = await instance.setupPuzzleAndFunds(puzzle, carol, Tue_15_Sep_00_00_00_BST_2020,
                 {from: alice, value: web3.utils.toWei('2', 'ether')});
         truffleAssert.eventEmitted(tx, 'LogSetup', (ev) => {
              return  ev.sender === alice && ev.amount.toString(10) === expectedAmount &&
@@ -228,8 +229,8 @@ contract('Remittance - Given new contract', (accounts) => {
     });
 
     it ('Should then allow alice to set another puzzle with funds', async () => {
-        puzzle = await instance.generatePuzzle(secret3, secret4);
-        tx = await instance.setupPuzzleAndFunds(puzzle, Tue_15_Sep_00_00_00_BST_2020,
+        puzzle = await instance.generatePuzzle(bob, secret4);
+        tx = await instance.setupPuzzleAndFunds(puzzle, bob, Tue_15_Sep_00_00_00_BST_2020,
                 {from: alice, value: web3.utils.toWei('2', 'ether')});
         truffleAssert.eventEmitted(tx, 'LogSetup', (ev) => {
              return  ev.sender === alice && ev.amount.toString(10) === expectedAmount &&
@@ -247,23 +248,23 @@ contract('Remittance - Given two puzzles set by alice', (accounts) => {
 
     before('set up contract with two sets of puzzles and funds from alice', async () => {
         instance = await Remittance.new({from: owner});
-        puzzle = await instance.generatePuzzle(secret1, secret2);
-        await instance.setupPuzzleAndFunds(puzzle, Tue_15_Sep_00_00_00_BST_2020,
+        puzzle = await instance.generatePuzzle(carol, secret2);
+        await instance.setupPuzzleAndFunds(puzzle, carol, Tue_15_Sep_00_00_00_BST_2020,
             {from: alice, value: web3.utils.toWei('2', 'ether')});
-        puzzle = await instance.generatePuzzle(secret3, secret4);
-        await instance.setupPuzzleAndFunds(puzzle, Tue_15_Sep_00_00_00_BST_2020,
+        puzzle = await instance.generatePuzzle(bob, secret4);
+        await instance.setupPuzzleAndFunds(puzzle, bob, Tue_15_Sep_00_00_00_BST_2020,
             {from: alice, value: web3.utils.toWei('2', 'ether')});
     });
 
     it('Should allow carol to solve puzzle and collect funds', async () => {
-        tx = await instance.solvePuzzleAndClaimFunds(text, text2, {from: carol});
+        tx = await instance.solvePuzzleAndClaimFunds(text2, {from: carol});
         truffleAssert.eventEmitted(tx, 'LogClaimFunds', (ev) => {
             return ev.sender === carol && ev.amount.toString(10) === expectedAmount;
         });
     });
 
     it('Should then allow bob to solve puzzle and collect funds', async () => {
-        tx = await instance.solvePuzzleAndClaimFunds("big", "boy", {from: bob});
+        tx = await instance.solvePuzzleAndClaimFunds("boy", {from: bob});
         truffleAssert.eventEmitted(tx, 'LogClaimFunds', (ev) => {
             return ev.sender === bob && ev.amount.toString(10) === expectedAmount;
         });
