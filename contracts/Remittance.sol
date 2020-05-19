@@ -15,7 +15,7 @@ contract Remittance is Stoppable {
 
     mapping(bytes32 => PaymentStruct) payments;
     
-    event LogSetup(address indexed sender, uint256 amount, bytes32 puzzle, uint256 expirationDate);
+    event LogSetup(address indexed sender, address indexed shop, uint256 amount, bytes32 puzzle, uint256 expirationDate);
     event LogClaimFunds(address indexed sender, uint256 amount);
     event LogPayerReclaimsFunds(address indexed sender, uint256 amount);
     
@@ -30,7 +30,7 @@ contract Remittance is Stoppable {
         payments[_puzzle].shop = _shop;
         payments[_puzzle].expirationDate = _expirationDate;
         payments[_puzzle].funds = msg.value;
-        emit LogSetup(msg.sender, msg.value, _puzzle, _expirationDate);
+        emit LogSetup(msg.sender, _shop, msg.value, _puzzle, _expirationDate);
         return true;
     }
     
