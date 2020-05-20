@@ -37,6 +37,7 @@ contract Remittance is Stoppable {
         require(payments[puzzle].funds != 0, "no funds");
         uint256 amount = payments[puzzle].funds;
         payments[puzzle].funds = 0;
+        payments[puzzle].expirationDate = 0;
         emit LogClaimFunds(msg.sender, amount);
         (bool result, ) = msg.sender.call.value(amount)("");
         require(result, "Failed to transfer funds");
@@ -55,6 +56,7 @@ contract Remittance is Stoppable {
         require(payments[puzzle].funds != 0, "no funds");
         uint256 amount = payments[puzzle].funds;
         payments[puzzle].funds = 0;
+        payments[puzzle].expirationDate = 0;
         emit LogPayerReclaimsFunds(msg.sender, amount);
         (bool result, ) = msg.sender.call.value(amount)("");
         require(result, "Failed to transfer funds");
