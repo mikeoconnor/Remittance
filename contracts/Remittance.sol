@@ -8,7 +8,6 @@ contract Remittance is Stoppable {
 
     struct PaymentStruct {
         address payer;
-        address shop;
         uint256 funds;
         uint256 expirationDate;
     }
@@ -25,9 +24,7 @@ contract Remittance is Stoppable {
         require(_expirationDate >= now, "expiration date not in future");
         require(msg.value != 0, "No funds provided");
         require(payments[_puzzle].payer == address(0), "puzzle should be zero");
-        require(payments[_puzzle].shop == address(0), "puzzle should be zero");
         payments[_puzzle].payer = msg.sender;
-        payments[_puzzle].shop = _shop;
         payments[_puzzle].expirationDate = _expirationDate;
         payments[_puzzle].funds = msg.value;
         emit LogSetup(msg.sender, _shop, msg.value, _puzzle, _expirationDate);
@@ -35,12 +32,8 @@ contract Remittance is Stoppable {
     }
     
     function solvePuzzleAndClaimFunds(string memory solution2) public payable ifAlive ifRunning returns(bool success){
-        address _shop = msg.sender;
-        require(_shop != address(0), "no shop");
-        bytes32 puzzle = generatePuzzle(_shop, solution2);
+        bytes32 puzzle = generatePuzzle(msg.sender, solution2);
         require(payments[puzzle].payer != address(0), "Puzzle not solved");
-        require(payments[puzzle].shop != address(0), "Puzzle not solved");
-        require(payments[puzzle].shop == _shop, "not shop");
         require(payments[puzzle].funds != 0, "no funds");
         uint256 amount = payments[puzzle].funds;
         payments[puzzle].funds = 0;
