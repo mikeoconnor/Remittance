@@ -134,7 +134,7 @@ contract('Remittance -Given puzzle set by alice and solved by carol', (accounts)
     it('Should not allow alice to reclaim the funds before expiration', async () => {
         await truffleAssert.reverts(
             instance.payerReclaimFundsAfterExpirationDate(carol, secret2, {from: alice}),
-            "not expired"
+            "no funds"
         );
     });
 });
