@@ -33,9 +33,8 @@ contract Remittance is Stoppable {
     
     function solvePuzzleAndClaimFunds(string memory solution2) public payable ifAlive ifRunning returns(bool success){
         bytes32 puzzle = generatePuzzle(msg.sender, solution2);
-        require(payments[puzzle].payer != address(0), "Puzzle not solved");
-        require(payments[puzzle].funds != 0, "no funds");
         uint256 amount = payments[puzzle].funds;
+        require(amount != 0, "no funds");
         payments[puzzle].funds = 0;
         payments[puzzle].expirationDate = 0;
         emit LogClaimFunds(msg.sender, amount);
@@ -50,11 +49,10 @@ contract Remittance is Stoppable {
 
     function payerReclaimFundsAfterExpirationDate(address _shop, string memory solution2) public payable returns (bool success){
         bytes32 puzzle = generatePuzzle(_shop, solution2);
-        require(payments[puzzle].payer != address(0), "Puzzle not solved");
         require(payments[puzzle].payer == msg.sender, "not payer");
         require(now >= payments[puzzle].expirationDate, "not expired");
-        require(payments[puzzle].funds != 0, "no funds");
         uint256 amount = payments[puzzle].funds;
+        require(amount != 0, "no funds");
         payments[puzzle].funds = 0;
         payments[puzzle].expirationDate = 0;
         emit LogPayerReclaimsFunds(msg.sender, amount);
