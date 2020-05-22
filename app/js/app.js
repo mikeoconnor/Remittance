@@ -55,16 +55,15 @@ const setup = async () => {
         console.log("Amount: ", $("input[name='amount']").val());
         console.log("Payer ", $("input[name='payer']").val());
 
-        const success = await inst.setupPuzzleAndFunds.call(
-            puzzle,
-            $("input[name='shop']").val(),
-            expiration,
-            {from: $("input[name='payer']").val(), value: $("input[name='amount']").val()
-        });
-
-        console.log("success: ", success);
-        if (!success) {
-            throw new Error("Not sending because transaction will fail");
+        try{
+            await inst.setupPuzzleAndFunds.call(
+                puzzle,
+                $("input[name='shop']").val(),
+                expiration,
+                {from: $("input[name='payer']").val(), value: $("input[name='amount']").val()
+            });
+        } catch(e){
+            throw new Error("Not sending because transaction will fail. " + e.toString());
         }
 
         const txObj = await inst.setupPuzzleAndFunds(
