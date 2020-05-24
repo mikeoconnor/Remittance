@@ -29,9 +29,12 @@ window.addEventListener('load', async() => {
 
         const inst = await Remittance.deployed();
         console.log("Contract Address", inst.address);
+        $("#address").html("Contract Address: " + inst.address);
         $("#status").html("Status: OK.");
 
         $("#send").click(setup);
+
+        $("#claim").click(solve);
     } catch (e) {
         console.log("error", e);
         $("#status").html("Status: " + e.toString());
@@ -40,7 +43,7 @@ window.addEventListener('load', async() => {
 
 const setup = async () => {
     try {
-
+        console.log("function setup entered...");
         console.log("shop: ", $("input[name='shop']").val());
         console.log("password ", $("input[name='password']").val());
 
@@ -90,11 +93,57 @@ const setup = async () => {
             $("#status").html("Status: Remittance transaction executed");
         }
 
-    } catch (e)
-    {
+    } catch (e){
         $("#status").html("Status: " + e.toString());
     }
 
+};
+
+const solve = async () => {
+    try {
+        console.log("function solve entered...");
+        console.log("shop: ", $("input[name='shop2']").val());
+        console.log("password ", $("input[name='password2']").val());
+
+        const inst = await Remittance.deployed();
+
+        const puzzle = await inst.generatePuzzle($("input[name='shop2']").val(), $("input[name='password2']").val());
+        console.log("puzzle ", puzzle);
+
+        try{
+            await inst.solvePuzzleAndClaimFunds.call(
+                $("input[name='password2']").val(),
+                {from: $("input[name='shop2']").val()
+            });
+        } catch(e)
+        {
+            throw new Error("Not sending because transaction will fail. " + e.toString());
+        }
+
+        const txObj = await inst.solvePuzzleAndClaimFunds(
+            $("input[name='password2']").val(),
+            {from: $("input[name='shop2']").val()
+        })
+        .on("transactionHash", txHash => $("#status2").html("Status: Transaction on the way " + txHash));
+
+        const receipt = txObj.receipt;
+        console.log("got receipt", receipt);
+
+        if (!receipt.status) {
+            console.error("Status: Wrong transaction status");
+            console.error(receipt);
+            $("#status2").html("Status: There was an error in the tx execution, status not 1");
+        } else if (receipt.logs.length == 0) {
+            console.error("Empty logs");
+            console.error(receipt);
+            $("#status2").html("Status: There was an error in the tx execution, missing logs");
+        } else {
+            console.log(receipt.logs[0]);
+            $("#status2").html("Status: Remittance transaction executed");
+        }
+    } catch (e) {
+        $("#status2").html("Status: " + e.toString());
+    }
 };
 
 require("file-loader?name=../index.html!../index.html");
