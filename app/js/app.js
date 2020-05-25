@@ -29,7 +29,7 @@ window.addEventListener('load', async() => {
 const setup = async () => {
     try {
         const inst = await Remittance.deployed();
-        const puzzle = await inst.generatePuzzle($("input[name='shop']").val(), $("input[name='password']").val());
+        const puzzle = await inst.generatePuzzle($("input[name='shop']").val(), web3.utils.asciiToHex($("input[name='password']").val()));
 
         //Expiration date is hard fixed to be 30 days from now.
         const DAYS30 = 30*86400;
@@ -82,7 +82,7 @@ const solve = async () => {
 
         try{
             await inst.solvePuzzleAndClaimFunds.call(
-                $("input[name='password2']").val(),
+                web3.utils.asciiToHex($("input[name='password2']").val()),
                 {from: $("input[name='shop2']").val()
             });
         } catch(e)
@@ -91,7 +91,7 @@ const solve = async () => {
         }
 
         const txObj = await inst.solvePuzzleAndClaimFunds(
-            $("input[name='password2']").val(),
+            web3.utils.asciiToHex($("input[name='password2']").val()),
             {from: $("input[name='shop2']").val()
         })
         .on("transactionHash", txHash => $("#status2").html("Status: Transaction on the way " + txHash));
