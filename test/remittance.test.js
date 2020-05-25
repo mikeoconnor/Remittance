@@ -5,12 +5,11 @@ const truffleAssert = require('truffle-assertions');
 let instance = null;
 let tx = null;
 let puzzle = null;
-const secret1 = "onetime1";
-const secret2 = "onetime2";
-const secret3 = "big";
-const secret4 = "boy";
-const text = "onetime1";
-const text2 = "onetime2";
+
+const secret2 = web3.utils.asciiToHex("onetime2");
+const secret4 = web3.utils.asciiToHex("boy");
+const text = web3.utils.asciiToHex("onetime1");
+const text2 = web3.utils.asciiToHex("onetime2");
 const expectedAmount = "2000000000000000000";
 const toBN = web3.utils.toBN;
 const getBalance = web3.eth.getBalance;
@@ -264,7 +263,7 @@ contract('Remittance - Given two puzzles set by alice', (accounts) => {
     });
 
     it('Should then allow bob to solve puzzle and collect funds', async () => {
-        tx = await instance.solvePuzzleAndClaimFunds("boy", {from: bob});
+        tx = await instance.solvePuzzleAndClaimFunds(secret4, {from: bob});
         truffleAssert.eventEmitted(tx, 'LogClaimFunds', (ev) => {
             return ev.sender === bob && ev.amount.toString(10) === expectedAmount;
         });
