@@ -38,9 +38,8 @@ contract Remittance is Stoppable {
         payments[puzzle].funds = 0;
         payments[puzzle].expirationDate = 0;
         emit LogClaimFunds(msg.sender, amount);
-        (bool result, ) = msg.sender.call.value(amount)("");
-        require(result, "Failed to transfer funds");
-        return result;
+        (success, ) = msg.sender.call.value(amount)("");
+        require(success, "Failed to transfer funds");
     }
 
     function generatePuzzle(address shop, string memory solution2) public view returns (bytes32 newPuzzle) {
@@ -56,8 +55,7 @@ contract Remittance is Stoppable {
         payments[puzzle].funds = 0;
         payments[puzzle].expirationDate = 0;
         emit LogPayerReclaimsFunds(msg.sender, amount);
-        (bool result, ) = msg.sender.call.value(amount)("");
-        require(result, "Failed to transfer funds");
-        return result;
+        (success, ) = msg.sender.call.value(amount)("");
+        require(success, "Failed to transfer funds");
     }
 }
