@@ -31,8 +31,8 @@ contract Remittance is Stoppable {
         return true;
     }
     
-    function solvePuzzleAndClaimFunds(string memory solution2) public payable ifAlive ifRunning returns(bool success){
-        bytes32 puzzle = generatePuzzle(msg.sender, solution2);
+    function solvePuzzleAndClaimFunds(bytes32 solution) public payable ifAlive ifRunning returns(bool success){
+        bytes32 puzzle = generatePuzzle(msg.sender, solution);
         uint256 amount = payments[puzzle].funds;
         require(amount != 0, "no funds");
         payments[puzzle].funds = 0;
@@ -42,12 +42,12 @@ contract Remittance is Stoppable {
         require(success, "Failed to transfer funds");
     }
 
-    function generatePuzzle(address shop, string memory solution2) public view returns (bytes32 newPuzzle) {
-        return keccak256(abi.encode(address(this), shop, solution2));
+    function generatePuzzle(address shop, bytes32 solution) public view returns (bytes32 newPuzzle) {
+        return keccak256(abi.encode(address(this), shop, solution));
     }
 
-    function payerReclaimFundsAfterExpirationDate(address _shop, string memory solution2) public payable returns (bool success){
-        bytes32 puzzle = generatePuzzle(_shop, solution2);
+    function payerReclaimFundsAfterExpirationDate(address _shop, bytes32 solution) public payable returns (bool success){
+        bytes32 puzzle = generatePuzzle(_shop, solution);
         require(payments[puzzle].payer == msg.sender, "not payer");
         require(now >= payments[puzzle].expirationDate, "not expired");
         uint256 amount = payments[puzzle].funds;
