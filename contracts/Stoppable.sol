@@ -4,12 +4,12 @@ import "./Ownable.sol";
 
 contract Stoppable is Ownable {
     bool private running = true;
-    bool private killed = false;
+    bool private killed;
 
-    event LogStopped(address sender);
-    event LogResumed(address sender);
-    event LogKilled(address sender);
-    event LogTransferFund(address to, uint amount);
+    event LogStopped(address indexed sender);
+    event LogResumed(address indexed sender);
+    event LogKilled(address indexed sender);
+    event LogTransferFund(address indexed to, uint amount);
 
     modifier ifRunning {
         require(running, "contract not running");
