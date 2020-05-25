@@ -14,9 +14,9 @@ contract Remittance is Stoppable {
 
     mapping(bytes32 => PaymentStruct) payments;
     
-    event LogSetup(address indexed sender, address indexed shop, uint256 amount, bytes32 puzzle, uint256 expirationDate);
-    event LogClaimFunds(address indexed sender, uint256 amount);
-    event LogPayerReclaimsFunds(address indexed sender, uint256 amount);
+    event LogSetup(address indexed sender, address indexed shop, uint256 amount, bytes32 indexed puzzle, uint256 expirationDate);
+    event LogClaimFunds(address indexed sender, uint256 amount, bytes32 indexed puzzle);
+    event LogPayerReclaimsFunds(address indexed sender, uint256 amount, bytes32 indexed puzzle);
     
     function setupPuzzleAndFunds(bytes32 _puzzle, address _shop, uint256 _expirationDate) public payable ifAlive ifRunning returns(bool success){
         require(_puzzle != 0, "No puzzle provided");
@@ -37,7 +37,7 @@ contract Remittance is Stoppable {
         require(amount != 0, "no funds");
         payments[puzzle].funds = 0;
         payments[puzzle].expirationDate = 0;
-        emit LogClaimFunds(msg.sender, amount);
+        emit LogClaimFunds(msg.sender, amount, puzzle);
         (success, ) = msg.sender.call.value(amount)("");
         require(success, "Failed to transfer funds");
     }
@@ -54,7 +54,7 @@ contract Remittance is Stoppable {
         require(amount != 0, "no funds");
         payments[puzzle].funds = 0;
         payments[puzzle].expirationDate = 0;
-        emit LogPayerReclaimsFunds(msg.sender, amount);
+        emit LogPayerReclaimsFunds(msg.sender, amount, puzzle);
         (success, ) = msg.sender.call.value(amount)("");
         require(success, "Failed to transfer funds");
     }

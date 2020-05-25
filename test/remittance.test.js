@@ -78,7 +78,7 @@ contract('Remittance -Given puzzle set by alice', (accounts) => {
     it('Should allow carol to solve puzzle and collect funds', async () => {
         tx = await instance.solvePuzzleAndClaimFunds(text2, {from: carol});
         truffleAssert.eventEmitted(tx, 'LogClaimFunds', (ev) => {
-            return ev.sender === carol && ev.amount.toString(10) === expectedAmount;
+            return ev.sender === carol && ev.amount.toString(10) === expectedAmount && ev.puzzle !== 0;
         });
     });
 
@@ -160,7 +160,7 @@ contract('Remittance - Given expiration date has expired', (accounts) => {
         await tm.advanceBlockAndSetTime(Fri_25_Sep_00_00_00_BST_2020);
         tx = await instance.payerReclaimFundsAfterExpirationDate(carol, secret2, {from: alice});
         truffleAssert.eventEmitted(tx, 'LogPayerReclaimsFunds', (ev) => {
-            return ev.sender === alice && ev.amount.toString(10) === expectedAmount;
+            return ev.sender === alice && ev.amount.toString(10) === expectedAmount && ev.puzzle !== 0;
         });
     });
 
@@ -194,7 +194,7 @@ contract('Remittance - Given expiration date has expired', (accounts) => {
         await tm.advanceBlockAndSetTime(Fri_25_Sep_00_00_00_BST_2020);
         tx = await instance.solvePuzzleAndClaimFunds(text2, {from: carol});
         truffleAssert.eventEmitted(tx, 'LogClaimFunds', (ev) => {
-            return ev.sender === carol && ev.amount.toString(10) === expectedAmount;
+            return ev.sender === carol && ev.amount.toString(10) === expectedAmount && ev.puzzle !== 0;
         });
     });
 
@@ -258,14 +258,14 @@ contract('Remittance - Given two puzzles set by alice', (accounts) => {
     it('Should allow carol to solve puzzle and collect funds', async () => {
         tx = await instance.solvePuzzleAndClaimFunds(text2, {from: carol});
         truffleAssert.eventEmitted(tx, 'LogClaimFunds', (ev) => {
-            return ev.sender === carol && ev.amount.toString(10) === expectedAmount;
+            return ev.sender === carol && ev.amount.toString(10) === expectedAmount && ev.puzzle !== 0;
         });
     });
 
     it('Should then allow bob to solve puzzle and collect funds', async () => {
         tx = await instance.solvePuzzleAndClaimFunds(secret4, {from: bob});
         truffleAssert.eventEmitted(tx, 'LogClaimFunds', (ev) => {
-            return ev.sender === bob && ev.amount.toString(10) === expectedAmount;
+            return ev.sender === bob && ev.amount.toString(10) === expectedAmount && ev.puzzle !== 0;
         });
     });
 });
