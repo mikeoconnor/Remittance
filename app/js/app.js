@@ -4,9 +4,11 @@ const $ = require("jquery");
 
 const remittanceJson = require("../../build/contracts/Remittance.json");
 
-if (typeof web3 !== 'undefined') {
-    window.web3 = new Web3(web3.currentProvider);
+if (typeof window.ethereum !== 'undefined' || typeof window.web3 !== 'undefined') {
+    console.log((window.ethereum) ? "Injected ethereum detected" : "Injected web3 detected");
+    window.web3 = new Web3(window.ethereum || window.web3.currentProvider);
 } else {
+    console.log("No injected web3 detected. Setting web3 provider to http://127.0.0.1:8545");
     window.web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 }
 
@@ -15,19 +17,34 @@ Remittance.setProvider(web3.currentProvider);
 
 window.addEventListener('load', async() => {
     try {
+        if (window.ethereum) {
+            window.ethereum.enable();
+        }
+        const accounts = await web3.eth.getAccounts();
+        console.log("accounts: ", accounts);
+        if (accounts.length == 0) {
+            throw new Error("No accounts with witch to transact");
+        }
+        window.account = accounts[0];
         const inst = await Remittance.deployed();
-        $("#address").html("Contract Address: " + inst.address);
-        $("#status").html("Status: OK.");
+        $("#address").html(inst.address);
+        $("#balance").html(await web3.eth.getBalance(inst.address));
+        $("#status").html("OK");
         $("#send").click(setup);
         $("#claim").click(solve);
     } catch (e) {
         console.log("error", e);
-        $("#status").html("Status: " + e.toString());
+        $("#status").html(e.toString());
     }
 });
 
 const setup = async () => {
     try {
+        const accounts = await web3.eth.getAccounts();
+        console.log("accounts: ", accounts);
+        if (accounts.length == 0) {
+            throw new Error("No accounts with witch to transact");
+        }
         const inst = await Remittance.deployed();
         const puzzle = await inst.generatePuzzle($("input[name='shop']").val(), web3.utils.asciiToHex($("input[name='password']").val()));
 
@@ -52,7 +69,7 @@ const setup = async () => {
             expiration,
             {from: $("input[name='payer']").val(), value: $("input[name='amount']").val()
         })
-        .on("transactionHash", txHash => $("#status").html("Status: Transaction on the way " + txHash));
+        .on("transactionHash", txHash => $("#status").html("Transaction on the way " + txHash));
 
         const receipt = txObj.receipt;
         console.log("got receipt", receipt);
@@ -60,24 +77,36 @@ const setup = async () => {
         if (!receipt.status) {
             console.error("Status: Wrong transaction status");
             console.error(receipt);
-            $("#status").html("Status: There was an error in the tx execution, status not 1");
+            $("#status").html("There was an error in the tx execution, status not 1");
         } else if (receipt.logs.length == 0) {
             console.error("Empty logs");
             console.error(receipt);
-            $("#status").html("Status: There was an error in the tx execution, missing logs");
+            $("#status").html("There was an error in the tx execution, missing logs");
         } else {
             console.log(receipt.logs[0]);
-            $("#status").html("Status: Remittance created");
+            $("#status").html("Remittance created");
         }
 
+        // update ui elements
+        $("#balance").html(await web3.eth.getBalance(inst.address));
+        $("input[name='payer']").val("");
+        $("input[name='amount']").val("");
+        $("input[name='shop']").val("");
+        $("input[name='password']").val("");
+
     } catch (e){
-        $("#status").html("Status: " + e.toString());
+        $("#status").html(e.toString());
     }
 
 };
 
 const solve = async () => {
     try {
+        const accounts = await web3.eth.getAccounts();
+        console.log("accounts: ", accounts);
+        if (accounts.length == 0) {
+            throw new Error("No accounts with witch to transact");
+        }
         const inst = await Remittance.deployed();
 
         try{
@@ -94,7 +123,7 @@ const solve = async () => {
             web3.utils.asciiToHex($("input[name='password2']").val()),
             {from: $("input[name='shop2']").val()
         })
-        .on("transactionHash", txHash => $("#status2").html("Status: Transaction on the way " + txHash));
+        .on("transactionHash", txHash => $("#status2").html("Transaction on the way " + txHash));
 
         const receipt = txObj.receipt;
         console.log("got receipt", receipt);
@@ -102,17 +131,22 @@ const solve = async () => {
         if (!receipt.status) {
             console.error("Status: Wrong transaction status");
             console.error(receipt);
-            $("#status2").html("Status: There was an error in the tx execution, status not 1");
+            $("#status2").html("There was an error in the tx execution, status not 1");
         } else if (receipt.logs.length == 0) {
             console.error("Empty logs");
             console.error(receipt);
-            $("#status2").html("Status: There was an error in the tx execution, missing logs");
+            $("#status2").html("There was an error in the tx execution, missing logs");
         } else {
             console.log(receipt.logs[0]);
-            $("#status2").html("Status: Remittance claimed");
+            $("#status2").html("Remittance claimed");
         }
+
+        // update ui elements
+        $("#balance").html(await web3.eth.getBalance(inst.address));
+        $("input[name='shop2']").val("");
+        $("input[name='password2']").val("");
     } catch (e) {
-        $("#status2").html("Status: " + e.toString());
+        $("#status2").html(e.toString());
     }
 };
 
