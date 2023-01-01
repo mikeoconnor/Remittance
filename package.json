@@ -25,8 +25,8 @@
     "file-loader": "^6.0.0",
     "ganache-time-traveler": "^1.0.14",
     "truffle-assertions": "^0.9.2",
-    "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.11"
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
   },
   "dependencies": {
     "ethereum-bridge": "^0.6.2",
